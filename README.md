@@ -1,0 +1,2 @@
+# BinarySerializer.OpenSpace
+BinarySerializer.OpenSpace is an extension library to [BinarySerializer](https://github.com/RayCarrot/BinarySerializer). It supports serializing formats from the OpenSpace games, such as Rayman 2 and 3.
