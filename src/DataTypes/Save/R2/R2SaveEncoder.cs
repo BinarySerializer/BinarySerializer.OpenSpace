@@ -10,7 +10,7 @@ namespace BinarySerializer.OpenSpace
     /// </summary>
     public class R2SaveEncoder : IStreamEncoder
     {
-        public string Name => "R2SaveEncoder";
+        public string Name => "R2SaveEncoding";
 
         /// <summary>
         /// Decodes the data and returns it in a stream
