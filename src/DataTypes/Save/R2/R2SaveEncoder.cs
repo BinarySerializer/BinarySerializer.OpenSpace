@@ -12,23 +12,18 @@ namespace BinarySerializer.OpenSpace
     {
         public string Name => "R2SaveEncoding";
 
-        /// <summary>
-        /// Decodes the data and returns it in a stream
-        /// </summary>
-        /// <param name="s">The encoded stream</param>
-        /// <returns>The stream with the decoded data</returns>
-        public Stream DecodeStream(Stream s) 
+        public void DecodeStream(Stream input, Stream output)
         {
-            var decompressedStream = new MemoryStream();
-
-            using Stream unxor = XORStream(s);
+            using Stream unxor = XORStream(input);
             using Reader reader = new Reader(unxor, isLittleEndian: true);
+
+            var initialOutputPos = output.Position;
 
             byte[] compr_big_window = new byte[256 * 8];
 
-            for (int i = 0; i < 256; i++) 
+            for (int i = 0; i < 256; i++)
             {
-                for (int j = 0; j < 8; j++) 
+                for (int j = 0; j < 8; j++)
                 {
                     compr_big_window[i * 8 + j] = (byte)i;
                 }
@@ -36,7 +31,7 @@ namespace BinarySerializer.OpenSpace
 
             byte[] compr_window = new byte[8];
 
-            for (int j = 0; j < 8; j++) 
+            for (int j = 0; j < 8; j++)
                 compr_window[j] = 0;
 
             byte checksum = reader.ReadByte();
@@ -47,52 +42,52 @@ namespace BinarySerializer.OpenSpace
             reader.BeginCalculateChecksum(new Checksum8Calculator());
 
             bool isFinished = false;
-            while (!isFinished) 
+            while (!isFinished)
             {
-                if (compressedByte == -1) 
+                if (compressedByte == -1)
                 {
-                    if (reader.BaseStream.Position >= reader.BaseStream.Length) 
+                    if (reader.BaseStream.Position >= reader.BaseStream.Length)
                     {
                         isFinished = true;
-                    } 
-                    else 
+                    }
+                    else
                     {
                         compressedByte = reader.ReadByte();
                         windowUpdateBitArray = reader.ReadByte();
                     }
                 }
-                else 
+                else
                 {
-                    if (reader.BaseStream.Position >= reader.BaseStream.Length) 
+                    if (reader.BaseStream.Position >= reader.BaseStream.Length)
                     {
-                        for (int i = 0; i < 8; i++) 
-                            decompressedStream.WriteByte(compr_window[i]);
+                        for (int i = 0; i < 8; i++)
+                            output.WriteByte(compr_window[i]);
 
                         isFinished = true;
-                    } 
-                    else 
+                    }
+                    else
                     {
                         compressedByte = reader.ReadByte();
 
-                        if (reader.BaseStream.Position >= reader.BaseStream.Length) 
+                        if (reader.BaseStream.Position >= reader.BaseStream.Length)
                         {
                             // TODO: only if bytes in window > 0
-                            for (int i = 0; i < compressedByte; i++) 
-                                decompressedStream.WriteByte(compr_window[i]);
+                            for (int i = 0; i < compressedByte; i++)
+                                output.WriteByte(compr_window[i]);
 
                             isFinished = true;
-                        } 
-                        else 
+                        }
+                        else
                         {
                             windowUpdateBitArray = reader.ReadByte();
 
-                            for (int i = 0; i < 8; i++) 
-                                decompressedStream.WriteByte(compr_window[i]);
+                            for (int i = 0; i < 8; i++)
+                                output.WriteByte(compr_window[i]);
                         }
                     }
                 }
 
-                if (isFinished) 
+                if (isFinished)
                     continue;
 
                 int bigWindowIndex = compressedByte;
@@ -112,35 +107,29 @@ namespace BinarySerializer.OpenSpace
             if (endChecksum != checksum)
                 throw new Exception($"Checksum failed! {checksum} - {endChecksum}");
 
-            if (decompressedStream.Length != decompressedSize)
-                throw new Exception($"Size mismatch! {decompressedStream.Length} - {decompressedSize}");
+            var outLength = output.Length - initialOutputPos;
 
-            // Set position back to 0
-            decompressedStream.Position = 0;
-
-            // Return the compressed data stream
-            return decompressedStream;
+            if (outLength != decompressedSize)
+                throw new Exception($"Size mismatch! {outLength} - {decompressedSize}");
         }
 
-        public Stream EncodeStream(Stream s) 
+        public void EncodeStream(Stream input, Stream output)
         {
-            var memStream = new MemoryStream();
-
-            Reader reader = new Reader(s);
+            using Reader reader = new Reader(input, leaveOpen: true);
             using Stream temp = new MemoryStream();
             using Writer writer = new Writer(temp);
 
             byte[] compr_big_window = new byte[256 * 8];
-            for (int i = 0; i < 256; i++) 
+            for (int i = 0; i < 256; i++)
             {
-                for (int j = 0; j < 8; j++) 
+                for (int j = 0; j < 8; j++)
                 {
                     compr_big_window[i * 8 + j] = (byte)i;
                 }
             }
 
             byte[] compr_window = new byte[8];
-            for (int j = 0; j < 8; j++) 
+            for (int j = 0; j < 8; j++)
                 compr_window[j] = 0;
 
             writer.Write((byte)0); // checksum
@@ -150,13 +139,13 @@ namespace BinarySerializer.OpenSpace
             writer.BeginCalculateChecksum(new Checksum8Calculator());
 
             bool isFinished = false;
-            while (!isFinished) 
+            while (!isFinished)
             {
                 uint num_bytesToCompress = 0;
 
-                for (int i = 0; i < 8; i++) 
+                for (int i = 0; i < 8; i++)
                 {
-                    if (reader.BaseStream.Position >= reader.BaseStream.Length) 
+                    if (reader.BaseStream.Position >= reader.BaseStream.Length)
                         break;
 
                     num_bytesToCompress++;
@@ -164,25 +153,25 @@ namespace BinarySerializer.OpenSpace
                     compr_window[i] = b;
                 }
 
-                if (num_bytesToCompress > 0) 
+                if (num_bytesToCompress > 0)
                 {
                     int maxOccurrencesInBigWindow = -1;
                     int bestBigWindowI = 0;
-                    for (int i = 0; i < 256; i++) 
+                    for (int i = 0; i < 256; i++)
                     {
                         int occurrencesInBigWindow = 0;
-                        for (int j = 0; j < num_bytesToCompress; j++) 
+                        for (int j = 0; j < num_bytesToCompress; j++)
                         {
-                            if (compr_big_window[i * 8 + j] == compr_window[j]) 
+                            if (compr_big_window[i * 8 + j] == compr_window[j])
                                 occurrencesInBigWindow++;
                         }
 
-                        if (occurrencesInBigWindow > maxOccurrencesInBigWindow) 
+                        if (occurrencesInBigWindow > maxOccurrencesInBigWindow)
                         {
                             maxOccurrencesInBigWindow = occurrencesInBigWindow;
                             bestBigWindowI = i;
 
-                            if (occurrencesInBigWindow == num_bytesToCompress) 
+                            if (occurrencesInBigWindow == num_bytesToCompress)
                                 break;
                         }
                     }
@@ -190,36 +179,36 @@ namespace BinarySerializer.OpenSpace
                     writer.Write((byte)bestBigWindowI);
                     byte windowUpdateBitArray = 0;
 
-                    for (int i = 0; i < Math.Min(8, num_bytesToCompress); i++) 
+                    for (int i = 0; i < Math.Min(8, num_bytesToCompress); i++)
                     {
-                        if (compr_big_window[bestBigWindowI * 8 + i] != compr_window[i]) 
+                        if (compr_big_window[bestBigWindowI * 8 + i] != compr_window[i])
                             windowUpdateBitArray = (byte)BitHelpers.SetBits(windowUpdateBitArray, 1, 1, i);
                     }
 
                     writer.Write(windowUpdateBitArray);
 
-                    for (int i = 0; i < 8; i++) 
+                    for (int i = 0; i < 8; i++)
                     {
-                        if (windowUpdateBitArray % 2 == 1) 
+                        if (windowUpdateBitArray % 2 == 1)
                             writer.Write((byte)compr_window[i]);
 
                         windowUpdateBitArray /= 2;
                     }
 
-                    if (num_bytesToCompress >= 8) 
+                    if (num_bytesToCompress >= 8)
                     {
-                        for (int i = 0; i < 8; i++) 
+                        for (int i = 0; i < 8; i++)
                         {
                             compr_big_window[bestBigWindowI * 8 + i] = compr_window[i];
                         }
-                    } 
-                    else 
+                    }
+                    else
                     {
                         writer.Write((byte)num_bytesToCompress);
                         isFinished = true;
                     }
-                } 
-                else 
+                }
+                else
                 {
                     isFinished = true;
                 }
@@ -232,14 +221,11 @@ namespace BinarySerializer.OpenSpace
             writer.Write((uint)decompressedSize);
             writer.BaseStream.Position = 0;
 
-            using (Stream xor = XORStream(writer.BaseStream)) 
-                xor.CopyTo(memStream);
-
-            memStream.Position = 0;
-            return memStream;
+            using Stream xor = XORStream(writer.BaseStream);
+            xor.CopyTo(output);
         }
 
-        private static Stream XORStream(Stream s) 
+        private static Stream XORStream(Stream s)
         {
             byte compr_incremental_xor = 0x57;
 
@@ -253,20 +239,20 @@ namespace BinarySerializer.OpenSpace
             uint decompressedSize = reader.ReadUInt32();
             decompressedSize ^= 0x54555657;
             decompressedStream.Write(BitConverter.GetBytes(decompressedSize), 0, 4);
-            while (s.Position < s.Length) 
+            while (s.Position < s.Length)
             {
                 byte b = reader.ReadByte();
                 byte xor = 0;
 
                 // Bit reverse
-                for (int i = 0; i < 8; i++) 
+                for (int i = 0; i < 8; i++)
                     xor = (byte)BitHelpers.SetBits(xor, BitHelpers.ExtractBits(compr_incremental_xor, 1, i), 1, 7 - i);
 
                 b = (byte)(b ^ (xor ^ 0xB9));
 
-                if (compr_incremental_xor == 0xFF) 
+                if (compr_incremental_xor == 0xFF)
                     compr_incremental_xor = 0x0;
-                else 
+                else
                     compr_incremental_xor++;
 
                 decompressedStream.WriteByte(b);

@@ -11,10 +11,9 @@ namespace BinarySerializer.OpenSpace
     {
         public string Name => "R3SaveEncoding";
 
-        public Stream DecodeStream(Stream s)
+        public void DecodeStream(Stream input, Stream output)
         {
-            using var reader = new Reader(s, leaveOpen: true);
-            var output = new MemoryStream();
+            using var reader = new Reader(input, leaveOpen: true);
 
             // Read the initial key
             uint XORKey = reader.ReadUInt32() ^ 0xA55AA55A;
@@ -64,13 +63,10 @@ namespace BinarySerializer.OpenSpace
                     output.Write(byteArray, 0, byteArray.Length);
                 }
             }
-
-            return output;
         }
 
-        public Stream EncodeStream(Stream s)
+        public void EncodeStream(Stream input, Stream output)
         {
-            var output = new MemoryStream();
             using var writer = new Writer(output, leaveOpen: true);
 
             // Write the initial XOR key to be the same as the hard-coded key to make it 0, thus removing the encryption
@@ -79,14 +75,14 @@ namespace BinarySerializer.OpenSpace
             // NOTE: We're not using the compression system here, TODO: Add a bool to the class to have the encoding to compress the data
 
             // Write in chunks of 127 (max size)
-            while (s.Position < s.Length)
+            while (input.Position < input.Length)
             {
                 // Create a buffer for the chunk of data
                 var buffer = new List<byte>();
 
                 for (int i = 0; i < 127; i++)
                 {
-                    int value = s.ReadByte();
+                    int value = input.ReadByte();
 
                     if (value == -1)
                         break;
@@ -100,8 +96,6 @@ namespace BinarySerializer.OpenSpace
                 // Write the buffer, but reversed
                 writer.Write(((IEnumerable<byte>)buffer).Reverse().ToArray());
             }
-
-            return output;
         }
     }
 }
