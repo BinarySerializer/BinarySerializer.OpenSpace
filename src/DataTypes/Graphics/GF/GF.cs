@@ -353,28 +353,18 @@ namespace BinarySerializer.OpenSpace
         /// </summary>
         public void UpdateRepeatByte()
         {
-            // Keep track of the length for each possible repeat byte
-            long[] lengths = new long[256];
+            // Keep track of the occurrence for each value
+            int[] byteCounts = new int[Byte.MaxValue + 1];
 
-            var e = new GF_Encoder
-            {
-                ChannelsCount = Channels,
-                PixelsCount = PixelCount,
-            };
-            var stream = new MemoryStream(PixelData);
+            // Enumerate each byte
+            foreach (byte b in PixelData)
+                byteCounts[b]++;
 
-            for (int b = 0; b < lengths.Length; b++)
-            {
-                var dummyStream = new DummyWriteStream();
+            // Get the min value
+            int min = byteCounts.Min();
 
-                stream.Position = 0;
-                e.RepeatByte = (byte)b;
-                e.EncodeStream(stream, dummyStream);
-
-                lengths[b] = dummyStream.Length;
-            }
-
-            RepeatByte = (byte)Array.IndexOf(lengths, lengths.Min());
+            // Set the repeat byte to the index with the minimum value
+            RepeatByte = (byte)Array.IndexOf(byteCounts, min);
         }
 
         public override void SerializeImpl(SerializerObject s)
