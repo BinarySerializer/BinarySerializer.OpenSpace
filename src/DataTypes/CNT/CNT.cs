@@ -21,7 +21,8 @@ namespace BinarySerializer.OpenSpace
             s.Goto(startOffset);
 
             // Read using the xor key
-            s.DoXOR(new XORArrayCalculator(file.FileXORKey), () => readAction(s));
+            int maxXORLength = (int)(file.FileSize - file.FileSize % file.FileXORKey.Length);
+            s.DoXOR(new XORArrayCalculator(file.FileXORKey, maxLength: maxXORLength), () => readAction(s));
 
             if (logIfNotFullyRead && s.CurrentPointer != startOffset + file.FileSize)
                 s.LogWarning($"File {file.FileName} was not fully read");
