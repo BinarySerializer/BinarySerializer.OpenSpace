@@ -1,4 +1,6 @@
-﻿namespace BinarySerializer.OpenSpace
+﻿using System;
+
+namespace BinarySerializer.OpenSpace
 {
     public class CNT : BinarySerializable
     {
@@ -7,6 +9,23 @@
         public byte StringsXORKey { get; set; }
         public string[] Directories { get; set; }
         public CNT_File[] Files { get; set; }
+
+        public void ReadFile(CNT_File file, Action<BinaryDeserializer> readAction, bool logIfNotFullyRead = true)
+        {
+            BinaryDeserializer s = Context.Deserializer;
+
+            // Get the file start offset
+            Pointer startOffset = Offset + file.FileOffset;
+
+            // Go to the file offset
+            s.Goto(startOffset);
+
+            // Read using the xor key
+            s.DoXOR(new XORArrayCalculator(file.FileXORKey), () => readAction(s));
+
+            if (logIfNotFullyRead && s.CurrentPointer != startOffset + file.FileSize)
+                s.LogWarning($"File {file.FileName} was not fully read");
+        }
 
         public override void SerializeImpl(SerializerObject s)
         {
