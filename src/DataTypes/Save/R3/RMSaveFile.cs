@@ -32,8 +32,16 @@ namespace BinarySerializer.OpenSpace
             get
             {
                 int day = Date % 31;
+
+                if (day == 0)
+                    day = 31;
+
                 int calc1_1 = (Date - day) / 31;
                 int month = calc1_1 % 12;
+
+                if (month == 0)
+                    month = 12;
+
                 int year = (calc1_1 - month) / 12;
 
                 int milliSeconds = Time % 1000;
