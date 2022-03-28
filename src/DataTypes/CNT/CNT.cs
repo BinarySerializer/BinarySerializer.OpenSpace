@@ -40,13 +40,28 @@ namespace BinarySerializer.OpenSpace
             StringsXORKey = s.Serialize<byte>(StringsXORKey, name: nameof(StringsXORKey));
 
             // Serialize the directory paths and the checksum afterwards
-            s.DoChecksum<byte>(new Checksum8Calculator(), () =>
+            if (IsChecksumUsed)
+            {
+                s.DoChecksum<byte>(new Checksum8Calculator(), serializeDirs, ChecksumPlacement.After, name: "DirectoriesChecksum");
+            }
+            else
+            {
+                serializeDirs();
+                
+                // If the checksum flag is false the checksum value has to be 0 or else the game will see it as
+                // being incorrect. This is because turning off the checksum doesn't turn off the verification itself,
+                // but instead turns off the calculation itself, thus leaving the calculated value at 0.
+                s.Serialize<byte>(0, "DirectoriesChecksum");
+            }
+
+            // Local method for serializing the directories so that the code can be reused in two places
+            void serializeDirs()
             {
                 byte key = IsXORUsed ? StringsXORKey : (byte)0;
 
                 for (int i = 0; i < Directories.Length; i++)
                     Directories[i] = s.SerializeObject<CNT_String>(Directories[i], x => x.Pre_XORKey = key, name: $"{nameof(Directories)}[{i}]");
-            }, ChecksumPlacement.After, name: "DirectoriesChecksum");
+            }
 
             // Serialize the file info
             Files = s.SerializeObjectArray<CNT_File>(Files, Files.Length, x => x.Pre_FileNameXORKey = IsXORUsed ? StringsXORKey : (byte)0, name: nameof(Files));
