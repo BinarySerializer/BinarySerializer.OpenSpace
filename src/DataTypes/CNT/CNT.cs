@@ -25,7 +25,7 @@ namespace BinarySerializer.OpenSpace
             s.DoXOR(new XORArrayCalculator(file.FileXORKey, maxLength: maxXORLength), () => readAction(s));
 
             if (logIfNotFullyRead && s.CurrentPointer != startOffset + file.FileSize)
-                s.SystemLog?.LogWarning("File {0} was not fully read", file.FileName);
+                s.SystemLogger?.LogWarning("File {0} was not fully read", file.FileName);
         }
 
         public override void SerializeImpl(SerializerObject s)

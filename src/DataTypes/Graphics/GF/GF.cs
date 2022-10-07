@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 
 namespace BinarySerializer.OpenSpace
@@ -370,7 +369,7 @@ namespace BinarySerializer.OpenSpace
         public override void SerializeImpl(SerializerObject s)
         {
             // Get the settings
-            OpenSpaceSettings settings = s.GetSettings<OpenSpaceSettings>();
+            OpenSpaceSettings settings = s.GetRequiredSettings<OpenSpaceSettings>();
 
             if (settings.MajorEngineVersion == MajorEngineVersion.Montreal)
             {
