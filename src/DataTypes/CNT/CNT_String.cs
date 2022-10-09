@@ -1,4 +1,6 @@
-﻿namespace BinarySerializer.OpenSpace
+﻿using System.Text;
+
+namespace BinarySerializer.OpenSpace
 {
     public class CNT_String : BinarySerializable
     {
@@ -19,7 +21,7 @@
             s.BeginCalculateChecksum(c);
 
             // Serialize the string value using the xor key
-            s.DoXOR(Pre_XORKey, () => Value = s.SerializeString(Value, length, name: $"{nameof(Value)}"));
+            s.DoXOR(Pre_XORKey, () => Value = s.SerializeString(Value, length, encoding: Encoding.GetEncoding(1252), name: $"{nameof(Value)}"));
         }
     }
 }
