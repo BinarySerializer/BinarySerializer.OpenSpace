@@ -22,7 +22,7 @@ namespace BinarySerializer.OpenSpace
 
             // Read using the xor key
             int maxXORLength = (int)(file.FileSize - file.FileSize % file.FileXORKey.Length);
-            s.DoXOR(new XORArrayCalculator(file.FileXORKey, maxLength: maxXORLength), () => readAction(s));
+            s.DoProcessed(new XorArrayProcessor(file.FileXORKey, maxLength: maxXORLength), () => readAction(s));
 
             if (logIfNotFullyRead && s.CurrentPointer != startOffset + file.FileSize)
                 s.SystemLogger?.LogWarning("File {0} was not fully read", file.FileName);
@@ -40,24 +40,26 @@ namespace BinarySerializer.OpenSpace
             StringsXORKey = s.Serialize<byte>(StringsXORKey, name: nameof(StringsXORKey));
 
             // Serialize the directories
-            s.DoChecksum<byte>(
-                c: IsChecksumUsed ? new Checksum8Calculator() : null,
-                value: default,
-                placement: ChecksumPlacement.After,
-                name: "DirectoriesChecksum",
-                action: () =>
+            s.DoProcessed(IsChecksumUsed ? new Checksum8Processor() : null, p =>
+            {
+                byte key = IsXORUsed ? StringsXORKey : (byte)0;
+
+                for (int i = 0; i < Directories.Length; i++)
+                    Directories[i] = s.SerializeObject<CNT_String>(Directories[i], x => x.Pre_XORKey = key, name: $"{nameof(Directories)}[{i}]");
+
+                if (p != null)
                 {
-                    byte key = IsXORUsed ? StringsXORKey : (byte)0;
-
-                    for (int i = 0; i < Directories.Length; i++)
-                        Directories[i] = s.SerializeObject<CNT_String>(Directories[i], x => x.Pre_XORKey = key, name: $"{nameof(Directories)}[{i}]");
-                });
-
-            if (!IsChecksumUsed)
-                // If the checksum flag is false the checksum value has to be 0 or else the game will see it as
-                // being incorrect. This is because turning off the checksum doesn't turn off the verification itself,
-                // but instead turns off the calculation, thus leaving the calculated value at 0.
-                s.Serialize<byte>(0, "DirectoriesChecksum");
+                    // Serialize checksum
+                    p.Serialize<byte>(s, name: "DirectoriesChecksum");
+                }
+                else
+                {
+                    // If the checksum flag is false the checksum value has to be 0 or else the game will see it as
+                    // being incorrect. This is because turning off the checksum doesn't turn off the verification itself,
+                    // but instead turns off the calculation, thus leaving the calculated value at 0.
+                    s.Serialize<byte>(0, "DirectoriesChecksum");
+                }
+            });
 
             // Serialize the file info
             Files = s.SerializeObjectArray<CNT_File>(Files, Files.Length, x => x.Pre_FileNameXORKey = IsXORUsed ? StringsXORKey : (byte)0, name: nameof(Files));

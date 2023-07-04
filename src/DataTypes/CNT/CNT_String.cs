@@ -13,15 +13,21 @@ namespace BinarySerializer.OpenSpace
 
         public override void SerializeImpl(SerializerObject s)
         {
-            IChecksumCalculator c = s.PauseCalculateChecksum();
-            
-            // Serialize the length
-            int length = s.Serialize<int>(Value?.Length ?? 0, name: $"{nameof(Value)}.Length");
+            ChecksumProcessor processor = s.GetProcessor<ChecksumProcessor>();
 
-            s.BeginCalculateChecksum(c);
+            int length = 0;
+
+            // Serialize the length (not included in the checksum)
+            if (processor == null)
+                length = s.Serialize<int>(Value?.Length ?? 0, name: $"{nameof(Value)}.Length");
+            else
+                processor.DoInactive(() => length = s.Serialize<int>(Value?.Length ?? 0, name: $"{nameof(Value)}.Length"));
 
             // Serialize the string value using the xor key
-            s.DoXOR(Pre_XORKey, () => Value = s.SerializeString(Value, length, encoding: Encoding.GetEncoding(1252), name: $"{nameof(Value)}"));
+            s.DoProcessed(new Xor8Processor(Pre_XORKey), () =>
+            {
+                Value = s.SerializeString(Value, length, encoding: Encoding.GetEncoding(1252), name: nameof(Value));
+            });
         }
     }
 }

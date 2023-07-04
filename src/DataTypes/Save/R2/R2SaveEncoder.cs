@@ -3,14 +3,14 @@ using System.IO;
 
 namespace BinarySerializer.OpenSpace
 {
-    // Copied from https://github.com/BinarySerializer/BinarySerializer.Ray1/blob/852226aa23e10d89118894857c3b8eb2c00aaa3e/src/BinarySerializer.Ray1/DataTypes/PC/SAV/PC_SaveEncoder.cs
+    // Copied from https://github.com/BinarySerializer/BinarySerializer.Ray1/blob/93f54e529a495df9c6d97b26936fa02ac7f33257/src/BinarySerializer.Ray1/DataTypes/PC/SaveEncoder.cs
 
     /// <summary>
     /// Compresses/decompresses PC save data
     /// </summary>
     public class R2SaveEncoder : IStreamEncoder
     {
-        public string Name => "R2SaveEncoding";
+        public string Name => "SaveEncoding";
 
         public void DecodeStream(Stream input, Stream output)
         {
@@ -39,7 +39,8 @@ namespace BinarySerializer.OpenSpace
             uint decompressedSize = reader.ReadUInt32();
             byte windowUpdateBitArray = 0;
 
-            reader.BeginCalculateChecksum(new Checksum8Calculator());
+            Checksum8Processor checksumProcessor = new();
+            reader.AddBinaryProcessor(checksumProcessor);
 
             bool isFinished = false;
             while (!isFinished)
@@ -102,7 +103,8 @@ namespace BinarySerializer.OpenSpace
                 }
             }
 
-            byte endChecksum = reader.EndCalculateChecksum<byte>();
+            reader.RemoveBinaryProcessor(checksumProcessor);
+            byte endChecksum = (byte)checksumProcessor.CalculatedValue;
 
             if (endChecksum != checksum)
                 throw new Exception($"Checksum failed! {checksum} - {endChecksum}");
@@ -136,7 +138,9 @@ namespace BinarySerializer.OpenSpace
             writer.Write((uint)0); // size
 
             uint startPos = (uint)reader.BaseStream.Position;
-            writer.BeginCalculateChecksum(new Checksum8Calculator());
+
+            Checksum8Processor checksumProcessor = new();
+            writer.AddBinaryProcessor(checksumProcessor);
 
             bool isFinished = false;
             while (!isFinished)
@@ -214,7 +218,8 @@ namespace BinarySerializer.OpenSpace
                 }
             }
 
-            byte checksum = writer.EndCalculateChecksum<byte>();
+            writer.RemoveBinaryProcessor(checksumProcessor);
+            byte checksum = (byte)checksumProcessor.CalculatedValue;
             uint decompressedSize = (uint)reader.BaseStream.Position - startPos;
             writer.BaseStream.Position = 0;
             writer.Write((byte)checksum);
