@@ -22,6 +22,8 @@ namespace BinarySerializer.OpenSpace
         public int Int_30 { get; set; }
         public int Int_34 { get; set; }
 
+        public byte[] PS2_Bytes_00 { get; set; }
+
         public R3SaveItem[] Items { get; set; }
 
         /// <summary>
@@ -66,21 +68,30 @@ namespace BinarySerializer.OpenSpace
         /// <param name="s">The serializer</param>
         public override void SerializeImpl(SerializerObject s)
         {
-            // Serialize header
-            Header = s.SerializeString(Header, 12, name: nameof(Header));
-            Date = s.Serialize<int>(Date, name: nameof(Date));
-            Time = s.Serialize<int>(Time, name: nameof(Time));
+            OpenSpaceSettings settings = s.GetRequiredSettings<OpenSpaceSettings>();
 
-            // Serialize unknown data
-            Int_14 = s.Serialize<int>(Int_14, name: nameof(Int_14));
-            Int_18 = s.Serialize<int>(Int_18, name: nameof(Int_18));
-            Int_1C = s.Serialize<int>(Int_1C, name: nameof(Int_1C));
-            Int_20 = s.Serialize<int>(Int_20, name: nameof(Int_20));
-            Int_24 = s.Serialize<int>(Int_24, name: nameof(Int_24));
-            Int_28 = s.Serialize<int>(Int_28, name: nameof(Int_28));
-            Int_2C = s.Serialize<int>(Int_2C, name: nameof(Int_2C));
-            Int_30 = s.Serialize<int>(Int_30, name: nameof(Int_30));
-            Int_34 = s.Serialize<int>(Int_34, name: nameof(Int_34));
+            if (settings.Platform == Platform.PlayStation2)
+            {
+                PS2_Bytes_00 = s.SerializeArray<byte>(PS2_Bytes_00, 2976, name: nameof(PS2_Bytes_00));
+            }
+            else
+            {
+                // Serialize header
+                Header = s.SerializeString(Header, 12, name: nameof(Header));
+                Date = s.Serialize<int>(Date, name: nameof(Date));
+                Time = s.Serialize<int>(Time, name: nameof(Time));
+
+                // Serialize unknown data
+                Int_14 = s.Serialize<int>(Int_14, name: nameof(Int_14));
+                Int_18 = s.Serialize<int>(Int_18, name: nameof(Int_18));
+                Int_1C = s.Serialize<int>(Int_1C, name: nameof(Int_1C));
+                Int_20 = s.Serialize<int>(Int_20, name: nameof(Int_20));
+                Int_24 = s.Serialize<int>(Int_24, name: nameof(Int_24));
+                Int_28 = s.Serialize<int>(Int_28, name: nameof(Int_28));
+                Int_2C = s.Serialize<int>(Int_2C, name: nameof(Int_2C));
+                Int_30 = s.Serialize<int>(Int_30, name: nameof(Int_30));
+                Int_34 = s.Serialize<int>(Int_34, name: nameof(Int_34));
+            }
 
             // Serialize data entries
             Items = s.SerializeObjectArrayUntil(Items, x => x.KeyLength == 0, () => new R3SaveItem(), name: nameof(Items));
