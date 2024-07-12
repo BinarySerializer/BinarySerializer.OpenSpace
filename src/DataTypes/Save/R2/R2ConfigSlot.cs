@@ -8,7 +8,7 @@
         /// <summary>
         /// The display name for the slot, including the percentage
         /// </summary>
-        public string SlotDisplayName { get; set; }
+        public string SlotName { get; set; }
 
         /// <summary>
         /// The slot index
@@ -17,7 +17,7 @@
 
         public override void SerializeImpl(SerializerObject s)
         {
-            SlotDisplayName = s.SerializeString(SlotDisplayName, 11, name: nameof(SlotDisplayName));
+            SlotName = s.SerializeString(SlotName, 11, name: nameof(SlotName));
             SlotIndex = s.Serialize<int>(SlotIndex, name: nameof(SlotIndex));
         }
     }

@@ -5,49 +5,62 @@
     /// </summary>
     public class R2ConfigFile : BinarySerializable
     {
+        // Version
         public int VersionLength { get; set; }
         public string Version { get; set; }
 
-        /// <summary>
-        /// The amount of save slots
-        /// </summary>
-        public int SlotCount { get; set; }
-
-        /// <summary>
-        /// The available save slots
-        /// </summary>
+        // Save slots
+        public int SlotsCount { get; set; }
         public R2ConfigSlot[] Slots { get; set; }
 
-        // Always 0?
-        public int UnknownInt1 { get; set; }
-        public int UnknownInt2 { get; set; }
+        // Video options
+        public int Details { get; set; }
+        public int ScreenSize { get; set; }
+        public int Brightness { get; set; } // Lumonosity 0-100
 
-        // Value between 0-100
-        public int Lumonosity { get; set; }
+        // Sound options
+        public int FxVolume { get; set; } // 0-127
+        public int MusicVolume { get; set; } // 0-127
+        public int VoiceVolume { get; set; } // 0-127
 
-        // 127 is max
-        public int SoundEffectVolume { get; set; }
-        public int MusicVolume { get; set; }
+        // Joystick calibration
+        public sbyte JoystickXmin { get; set; }
+        public sbyte JoystickXmax { get; set; }
+        public sbyte JoystickYmin { get; set; }
+        public sbyte JoystickYmax { get; set; }
+        public sbyte JoystickXcenter { get; set; }
+        public sbyte JoystickYcenter { get; set; }
 
-        // Also some volume?
-        public int UnknownInt3 { get; set; }
-
-        // Joystick related?
-        public byte[] UnknownBytes { get; set; }
+        // TODO: Would be nice to parse this, but it requires also parsing the fix.sna file
+        //       since the values depend on if they're for keyboard or joypad. However, this
+        //       is unused in Rayman 2 on PC, so the data is empty (0xFF).
+        // Input options
+        public byte[] InputOptions { get; set; }
 
         public override void SerializeImpl(SerializerObject s)
         {
             VersionLength = s.Serialize<int>(VersionLength, name: nameof(VersionLength));
             Version = s.SerializeString(Version, VersionLength + 1, name: nameof(Version));
-            SlotCount = s.Serialize<int>(SlotCount, name: nameof(SlotCount));
-            Slots = s.SerializeObjectArray<R2ConfigSlot>(Slots, SlotCount, name: nameof(Slots));
-            UnknownInt1 = s.Serialize<int>(UnknownInt1, name: nameof(UnknownInt1));
-            UnknownInt2 = s.Serialize<int>(UnknownInt2, name: nameof(UnknownInt2));
-            Lumonosity = s.Serialize<int>(Lumonosity, name: nameof(Lumonosity));
-            SoundEffectVolume = s.Serialize<int>(SoundEffectVolume, name: nameof(SoundEffectVolume));
+
+            SlotsCount = s.Serialize<int>(SlotsCount, name: nameof(SlotsCount));
+            Slots = s.SerializeObjectArray<R2ConfigSlot>(Slots, SlotsCount, name: nameof(Slots));
+
+            Details = s.Serialize<int>(Details, name: nameof(Details));
+            ScreenSize = s.Serialize<int>(ScreenSize, name: nameof(ScreenSize));
+            Brightness = s.Serialize<int>(Brightness, name: nameof(Brightness));
+
+            FxVolume = s.Serialize<int>(FxVolume, name: nameof(FxVolume));
             MusicVolume = s.Serialize<int>(MusicVolume, name: nameof(MusicVolume));
-            UnknownInt3 = s.Serialize<int>(UnknownInt3, name: nameof(UnknownInt3));
-            UnknownBytes = s.SerializeArray<byte>(UnknownBytes, 7, name: nameof(UnknownBytes));
+            VoiceVolume = s.Serialize<int>(VoiceVolume, name: nameof(VoiceVolume));
+
+            JoystickXmin = s.Serialize<sbyte>(JoystickXmin, name: nameof(JoystickXmin));
+            JoystickXmax = s.Serialize<sbyte>(JoystickXmax, name: nameof(JoystickXmax));
+            JoystickYmin = s.Serialize<sbyte>(JoystickYmin, name: nameof(JoystickYmin));
+            JoystickYmax = s.Serialize<sbyte>(JoystickYmax, name: nameof(JoystickYmax));
+            JoystickXcenter = s.Serialize<sbyte>(JoystickXcenter, name: nameof(JoystickXcenter));
+            JoystickYcenter = s.Serialize<sbyte>(JoystickYcenter, name: nameof(JoystickYcenter));
+
+            InputOptions = s.SerializeArray<byte>(InputOptions, 1, name: nameof(InputOptions));
         }
     }
 }
