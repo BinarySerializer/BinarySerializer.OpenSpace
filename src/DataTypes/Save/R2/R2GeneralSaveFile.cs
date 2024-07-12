@@ -5,28 +5,44 @@
     /// </summary>
     public class R2GeneralSaveFile : BinarySerializable
     {
-        public byte[] Bytes_00 { get; set; }
-        
-        // Level to spawn on in the Hall of Doors
-        public byte LastLevel { get; set; }
-        
-        public byte[] Bytes_04 { get; set; }
+        // NOTE: All values are written in reverse order to the save file
 
-        // TODO: Parse as bool properties for each flag?
+        // Set from code in StdGame
+        public byte HitPointsMaxMax { get; set; }
+        public byte HitPointsMax { get; set; }
+        public byte HitPoints { get; set; }
+
+        // Remaining values are DsgVars from the Global perso
+        public int LastLevel { get; set; } // Int_67
+        public bool Boolean_50 { get; set; }
+        public bool Boolean_49 { get; set; }
+        public byte UByte_46 { get; set; }
+        public byte UByte_45 { get; set; }
+
         /// <summary>
-        /// The global bit array. This contains 1440 bit flags which determine things like which Lums/cages are collected, which cutscenes have been viewed etc. Some values are parsed as integers such as the record times in the walk of races.
+        /// The global bit array. This contains 1440 bit flags which determine things like which
+        /// Lums/cages are collected, which cutscenes have been viewed etc. Some values are parsed
+        /// as integers such as the record times in the walk of races.
         /// </summary>
-        public int[] GlobalArray { get; set; }
+        public int[] GlobalArray { get; set; } // IntegerArray_42
 
-        public byte[] Bytes_BF { get; set; }
+        public bool Boolean_20 { get; set; }
+        public int Int_6 { get; set; }
 
         public override void SerializeImpl(SerializerObject s)
         {
-            Bytes_00 = s.SerializeArray<byte>(Bytes_00, 3, name: nameof(Bytes_00));
-            LastLevel = s.Serialize<byte>(LastLevel, name: nameof(LastLevel));
-            Bytes_04 = s.SerializeArray<byte>(Bytes_04, 7, name: nameof(Bytes_04));
+            HitPointsMaxMax = s.Serialize<byte>(HitPointsMaxMax, name: nameof(HitPointsMaxMax));
+            HitPointsMax = s.Serialize<byte>(HitPointsMax, name: nameof(HitPointsMax));
+            HitPoints = s.Serialize<byte>(HitPoints, name: nameof(HitPoints));
+
+            LastLevel = s.Serialize<int>(LastLevel, name: nameof(LastLevel));
+            Boolean_50 = s.Serialize<bool>(Boolean_50, name: nameof(Boolean_50));
+            Boolean_49 = s.Serialize<bool>(Boolean_49, name: nameof(Boolean_49));
+            UByte_46 = s.Serialize<byte>(UByte_46, name: nameof(UByte_46));
+            UByte_45 = s.Serialize<byte>(UByte_45, name: nameof(UByte_45));
             GlobalArray = s.SerializeArray<int>(GlobalArray, 45, name: nameof(GlobalArray));
-            Bytes_BF = s.SerializeArray<byte>(Bytes_BF, 5, name: nameof(Bytes_BF));
+            Boolean_20 = s.Serialize<bool>(Boolean_20, name: nameof(Boolean_20));
+            Int_6 = s.Serialize<int>(Int_6, name: nameof(Int_6));
         }
 
         /// <summary>
