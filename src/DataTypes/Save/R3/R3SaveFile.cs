@@ -13,8 +13,8 @@
         {
             OpenSpaceSettings settings = s.GetRequiredSettings<OpenSpaceSettings>();
 
-            Checksum32Processor processor = settings.Platform == Platform.PlayStation2 
-                ? new Checksum32Processor() // TODO: Fix
+            CalculatedValueProcessor processor = settings.Platform == Platform.PlayStation2 
+                ? new R3PS2MemoryCardChecksumProcessor() // TODO: Fix
                 : null;
             s.DoProcessed(processor, p =>
             {
@@ -23,7 +23,7 @@
                 Elements = s.SerializeObjectArrayUntil(Elements, x => x.KeyLength == 0, () => new R3SaveItem(), name: nameof(Elements));
 
                 if (settings.Platform == Platform.PlayStation2)
-                    p.Serialize<uint>(s, name: "Checksum");
+                    p.Serialize<int>(s, name: "Checksum");
             });
         }
     }
