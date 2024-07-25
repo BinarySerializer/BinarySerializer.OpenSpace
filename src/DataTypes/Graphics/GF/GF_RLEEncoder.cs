@@ -3,23 +3,22 @@ using System.IO;
 
 namespace BinarySerializer.OpenSpace
 {
-    public class GF_Encoder : IStreamEncoder
+    public class GF_RLEEncoder : IStreamEncoder
     {
-        public GF_Encoder() { }
+        public GF_RLEEncoder() { }
 
-        public GF_Encoder(byte repeatByte, int channelsCount, int pixelsCount)
+        public GF_RLEEncoder(byte rleCode, int bytesPerPixel, int imageSize)
         {
-            RepeatByte = repeatByte;
-            ChannelsCount = channelsCount;
-            PixelsCount = pixelsCount;
+            RLECode = rleCode;
+            BytesPerPixel = bytesPerPixel;
+            ImageSize = imageSize;
         }
 
-        public byte RepeatByte { get; set; }
+        public byte RLECode { get; }
+        public int BytesPerPixel { get; }
+        public int ImageSize { get; }
 
-        public int ChannelsCount { get; set; }
-        public int PixelsCount { get; set; }
-
-        public string Name => $"GF_RLE";
+        public string Name => "GF_RLE";
         
         public void DecodeStream(Stream input, Stream output)
         {
@@ -28,24 +27,24 @@ namespace BinarySerializer.OpenSpace
             // The encoded data is stored as an array of channels rather than pixels. Since it's simpler to work with the latter
             // we have the encoder also convert the data structure. Potentially this can be changed in the future if it causes issues.
             // If it were to be changed we would write directly to the output rather than using this buffer.
-            byte[] pixelBuffer = new byte[ChannelsCount * PixelsCount];
+            byte[] pixelBuffer = new byte[BytesPerPixel * ImageSize];
 
             // Keep track of the current channel
             int channel = 0;
 
             // Enumerate each channel
-            while (channel < ChannelsCount)
+            while (channel < BytesPerPixel)
             {
                 int pixel = 0;
 
                 // Enumerate through each pixel
-                while (pixel < PixelsCount)
+                while (pixel < ImageSize)
                 {
                     // Read the next byte
                     byte b = reader.ReadByte();
 
                     // Check if it's the repeat byte in which case we repeat a specific byte
-                    if (b == RepeatByte)
+                    if (b == RLECode)
                     {
                         // Get the value to repeat
                         byte value = reader.ReadByte();
@@ -56,13 +55,13 @@ namespace BinarySerializer.OpenSpace
                         // Repeat the value the specified number of times
                         for (int i = 0; i < count; ++i)
                         {
-                            pixelBuffer[channel + pixel * ChannelsCount] = value;
+                            pixelBuffer[channel + pixel * BytesPerPixel] = value;
                             pixel++;
                         }
                     }
                     else
                     {
-                        pixelBuffer[channel + pixel * ChannelsCount] = b;
+                        pixelBuffer[channel + pixel * BytesPerPixel] = b;
                         pixel++;
                     }
                 }
@@ -83,23 +82,23 @@ namespace BinarySerializer.OpenSpace
             int channel = 0;
 
             // Enumerate each channel
-            while (channel < ChannelsCount)
+            while (channel < BytesPerPixel)
             {
                 int pixelIndex = 0;
-                byte getByte(int pixel) => buffer[pixel * ChannelsCount + channel];
+                byte getByte(int pixel) => buffer[pixel * BytesPerPixel + channel];
 
                 // Enumerate through each pixel
-                while (pixelIndex < PixelsCount)
+                while (pixelIndex < ImageSize)
                 {
                     // Get the byte
                     byte b = getByte(pixelIndex);
 
                     // Repeat if the byte is the repeat byte or else we can't write it normally
-                    bool shouldRepeat = b == RepeatByte;
+                    bool shouldRepeat = b == RLECode;
 
                     // Also repeat if the next 3 bytes matches this one
                     if (!shouldRepeat &&
-                        pixelIndex + 3 < PixelsCount &&
+                        pixelIndex + 3 < ImageSize &&
                         b == getByte(pixelIndex + 1) &&
                         b == getByte(pixelIndex + 2) &&
                         b == getByte(pixelIndex + 3))
@@ -111,7 +110,7 @@ namespace BinarySerializer.OpenSpace
                         byte repeatValue = b;
 
                         // Write the repeat byte
-                        output.WriteByte(RepeatByte);
+                        output.WriteByte(RLECode);
 
                         // Write the value to repeat
                         output.WriteByte(repeatValue);
@@ -120,7 +119,7 @@ namespace BinarySerializer.OpenSpace
                         int repeatCount = 0;
 
                         // Check each value until we break
-                        while (pixelIndex < PixelsCount)
+                        while (pixelIndex < ImageSize)
                         {
                             // Get the byte
                             b = getByte(pixelIndex);

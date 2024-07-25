@@ -5,46 +5,46 @@
         /// <summary>
         /// 32 bpp (8888), BGRA
         /// </summary>
-        Format_32bpp_BGRA_8888,
+        BGRA_8888,
 
         /// <summary>
         /// 24 bpp (888), BGR
         /// </summary>
-        Format_24bpp_BGR_888,
+        BGR_888,
 
         /// <summary>
-        /// 16 bpp (88), gray-scale with alpha channel
+        /// 16 bpp (88), grayscale with alpha channel
         /// </summary>
-        Format_16bpp_GrayAlpha_88,
+        GrayscaleAlpha_88,
 
         /// <summary>
         /// 16 bpp (4444), BGRA
         /// </summary>
-        Format_16bpp_BGRA_4444,
+        BGRA_4444,
 
         /// <summary>
         /// 16 bpp (1555), BGRA
         /// </summary>
-        Format_16bpp_BGRA_1555,
+        BGRA_1555,
 
         /// <summary>
         /// 16 bpp (565), BGR
         /// </summary>
-        Format_16bpp_BGR_565,
+        BGR_565,
 
         /// <summary>
         /// 8 bpp, BGRA
         /// </summary>
-        Format_8bpp_BGRA_Indexed,
+        BGRA_Indexed,
 
         /// <summary>
         /// 8 bpp, BGR
         /// </summary>
-        Format_8bpp_BGR_Indexed,
+        BGR_Indexed,
 
         /// <summary>
-        /// 8 bpp, gray-scale
+        /// 8 bpp, grayscale
         /// </summary>
-        Format_8bpp_Gray,
+        Grayscale,
     }
 }
