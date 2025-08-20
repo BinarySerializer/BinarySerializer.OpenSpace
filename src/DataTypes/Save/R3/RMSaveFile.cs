@@ -24,7 +24,7 @@ namespace BinarySerializer.OpenSpace
 
         public byte[] PS2_Bytes_00 { get; set; }
 
-        public R3SaveItem[] Items { get; set; }
+        public R3SaveElement[] Elements { get; set; }
 
         /// <summary>
         /// The time the save was last modified
@@ -94,7 +94,7 @@ namespace BinarySerializer.OpenSpace
             }
 
             // Serialize data entries
-            Items = s.SerializeObjectArrayUntil(Items, x => x.KeyLength == 0, () => new R3SaveItem(), name: nameof(Items));
+            Elements = s.SerializeObjectArrayUntil(Elements, x => x.ElementNameLength == 0, () => new R3SaveElement(), name: nameof(Elements));
         }
     }
 }

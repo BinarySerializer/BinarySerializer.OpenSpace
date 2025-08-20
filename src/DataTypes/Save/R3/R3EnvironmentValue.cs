@@ -5,13 +5,13 @@
     /// </summary>
     public class R3EnvironmentValue : BinarySerializable
     {
-        public int Cages { get; set; }
-        public int Score { get; set; }
+        public uint Cages { get; set; }
+        public uint Score { get; set; }
 
         public override void SerializeImpl(SerializerObject s)
         {
-            Cages = s.Serialize<int>(Cages, name: nameof(Cages));
-            Score = s.Serialize<int>(Score, name: nameof(Score));
+            Cages = s.Serialize<uint>(Cages, name: nameof(Cages));
+            Score = s.Serialize<uint>(Score, name: nameof(Score));
         }
     }
 }

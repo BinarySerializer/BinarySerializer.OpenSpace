@@ -5,9 +5,9 @@
     /// </summary>
     public class R3SaveFile : BinarySerializable
     {
-        public R3SaveList SaveList { get; set; }
+        public R3SaveHeader SaveHeader { get; set; }
         public R3GameOptions GameOptions { get; set; }
-        public R3SaveItem[] Elements { get; set; }
+        public R3SaveElement[] Elements { get; set; }
 
         public override void SerializeImpl(SerializerObject s)
         {
@@ -18,9 +18,9 @@
                 : null;
             s.DoProcessed(processor, p =>
             {
-                SaveList = s.SerializeObject<R3SaveList>(SaveList, name: nameof(SaveList));
+                SaveHeader = s.SerializeObject<R3SaveHeader>(SaveHeader, name: nameof(SaveHeader));
                 GameOptions = s.SerializeObject<R3GameOptions>(GameOptions, name: nameof(GameOptions));
-                Elements = s.SerializeObjectArrayUntil(Elements, x => x.KeyLength == 0, () => new R3SaveItem(), name: nameof(Elements));
+                Elements = s.SerializeObjectArrayUntil(Elements, x => x.ElementNameLength == 0, () => new R3SaveElement(), name: nameof(Elements));
 
                 if (settings.Platform == Platform.PlayStation2)
                     p.Serialize<int>(s, name: "Checksum");

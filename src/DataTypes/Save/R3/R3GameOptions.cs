@@ -1,44 +1,50 @@
 ﻿namespace BinarySerializer.OpenSpace
 {
-    // g_stGameOptions
+    // tdstGameOptions
     public class R3GameOptions : BinarySerializable
     {
         // PS2
-        public byte[] PS2_Bytes_00 { get; set; }
+        public string DefaultFileName { get; set; }
+        public string CurrentFileName { get; set; }
+        public R3SaveGameSlot[] SaveGameSlots { get; set; }
+        public uint SlotsCount { get; set; }
+        public uint CurrentSlot { get; set; }
 
-        // Video options (unused)
-        public int Details { get; set; }
-        public int Int_04 { get; set; } // Same as Rayman 2? ScreenSize and then Brightness?
-        public int Int_08 { get; set; }
-        public int Int_0C { get; set; }
+        // Video options
+        public uint Details { get; set; }
+        public uint ScreenSize { get; set; }
+        public uint Pal60 { get; set; }
+        public uint ScreenSizeLoad { get; set; }
 
         // Sound options
-        public int SoundVolume { get; set; }
-        public int VoiceVolume { get; set; }
-        public int MusicVolume { get; set; }
-        public int AmbianceVolume { get; set; }
-        public int MenuVolume { get; set; }
+        public int VolumeSound { get; set; }
+        public int VolumeVoice { get; set; }
+        public int VolumeMusic { get; set; }
+        public int VolumeAmbiance { get; set; }
+        public int VolumeMenu { get; set; }
 
         public override void SerializeImpl(SerializerObject s)
         {
             OpenSpaceSettings settings = s.GetRequiredSettings<OpenSpaceSettings>();
 
-            if (settings.Platform == Platform.PC)
+            if (settings.Platform == Platform.PlayStation2)
             {
-                Details = s.Serialize<int>(Details, name: nameof(Details));
-                Int_04 = s.Serialize<int>(Int_04, name: nameof(Int_04));
-                Int_08 = s.Serialize<int>(Int_08, name: nameof(Int_08));
-                Int_0C = s.Serialize<int>(Int_0C, name: nameof(Int_0C));
-                SoundVolume = s.Serialize<int>(SoundVolume, name: nameof(SoundVolume));
-                VoiceVolume = s.Serialize<int>(VoiceVolume, name: nameof(VoiceVolume));
-                MusicVolume = s.Serialize<int>(MusicVolume, name: nameof(MusicVolume));
-                AmbianceVolume = s.Serialize<int>(AmbianceVolume, name: nameof(AmbianceVolume));
-                MenuVolume = s.Serialize<int>(MenuVolume, name: nameof(MenuVolume));
+                DefaultFileName = s.SerializeString(DefaultFileName, length: 256, name: nameof(DefaultFileName));
+                CurrentFileName = s.SerializeString(CurrentFileName, length: 256, name: nameof(CurrentFileName));
+                SaveGameSlots = s.SerializeObjectArray<R3SaveGameSlot>(SaveGameSlots, 1, name: nameof(SaveGameSlots));
+                SlotsCount = s.Serialize<uint>(SlotsCount, name: nameof(SlotsCount));
+                CurrentSlot = s.Serialize<uint>(CurrentSlot, name: nameof(CurrentSlot));
             }
-            else if (settings.Platform == Platform.PlayStation2)
-            {
-                PS2_Bytes_00 = s.SerializeArray<byte>(PS2_Bytes_00, 564, name: nameof(PS2_Bytes_00));
-            }
+
+            Details = s.Serialize<uint>(Details, name: nameof(Details));
+            ScreenSize = s.Serialize<uint>(ScreenSize, name: nameof(ScreenSize));
+            Pal60 = s.Serialize<uint>(Pal60, name: nameof(Pal60));
+            ScreenSizeLoad = s.Serialize<uint>(ScreenSizeLoad, name: nameof(ScreenSizeLoad));
+            VolumeSound = s.Serialize<int>(VolumeSound, name: nameof(VolumeSound));
+            VolumeVoice = s.Serialize<int>(VolumeVoice, name: nameof(VolumeVoice));
+            VolumeMusic = s.Serialize<int>(VolumeMusic, name: nameof(VolumeMusic));
+            VolumeAmbiance = s.Serialize<int>(VolumeAmbiance, name: nameof(VolumeAmbiance));
+            VolumeMenu = s.Serialize<int>(VolumeMenu, name: nameof(VolumeMenu));
         }
     }
 }

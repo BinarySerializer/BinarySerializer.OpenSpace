@@ -1,6 +1,5 @@
 ﻿namespace BinarySerializer.OpenSpace
 {
-    // g_aEnvValue
     public class R3EnvironmentValues : BinarySerializable
     {
         public R3EnvironmentValue Total { get; set; }
