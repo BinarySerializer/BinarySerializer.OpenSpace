@@ -9,9 +9,14 @@
 
         public override void SerializeImpl(SerializerObject s)
         {
+            OpenSpaceSettings settings = s.GetRequiredSettings<OpenSpaceSettings>();
+            
             Date = s.Serialize<uint>(Date, name: nameof(Date));
-            NewSlotName = s.SerializeString(NewSlotName, length: 2, name: nameof(NewSlotName));
-            OldSlotName = s.SerializeString(OldSlotName, length: 2, name: nameof(OldSlotName));
+            
+            int stringLength = settings.Platform == Platform.PlayStation2 ? 2 : 10;
+
+            NewSlotName = s.SerializeString(NewSlotName, length: stringLength, name: nameof(NewSlotName));
+            OldSlotName = s.SerializeString(OldSlotName, length: stringLength, name: nameof(OldSlotName));
         }
     }
 }

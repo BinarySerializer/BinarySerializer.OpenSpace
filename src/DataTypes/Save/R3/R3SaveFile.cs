@@ -14,7 +14,7 @@
             OpenSpaceSettings settings = s.GetRequiredSettings<OpenSpaceSettings>();
 
             CalculatedValueProcessor processor = settings.Platform == Platform.PlayStation2 
-                ? new R3PS2MemoryCardChecksumProcessor() // TODO: Fix
+                ? new R3PS2MemoryCardChecksumProcessor()
                 : null;
             s.DoProcessed(processor, p =>
             {

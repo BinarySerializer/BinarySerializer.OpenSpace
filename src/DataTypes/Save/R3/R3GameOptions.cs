@@ -27,11 +27,14 @@
         {
             OpenSpaceSettings settings = s.GetRequiredSettings<OpenSpaceSettings>();
 
-            if (settings.Platform == Platform.PlayStation2)
+            if (settings.Platform is Platform.PlayStation2 or Platform.NintendoGameCube)
             {
-                DefaultFileName = s.SerializeString(DefaultFileName, length: 256, name: nameof(DefaultFileName));
-                CurrentFileName = s.SerializeString(CurrentFileName, length: 256, name: nameof(CurrentFileName));
-                SaveGameSlots = s.SerializeObjectArray<R3SaveGameSlot>(SaveGameSlots, 1, name: nameof(SaveGameSlots));
+                int stringLength = settings.Platform == Platform.PlayStation2 ? 256 : 260;
+                int slotsCount = settings.Platform == Platform.PlayStation2 ? 1 : 100;
+
+                DefaultFileName = s.SerializeString(DefaultFileName, length: stringLength, name: nameof(DefaultFileName));
+                CurrentFileName = s.SerializeString(CurrentFileName, length: stringLength, name: nameof(CurrentFileName));
+                SaveGameSlots = s.SerializeObjectArray<R3SaveGameSlot>(SaveGameSlots, slotsCount, name: nameof(SaveGameSlots));
                 SlotsCount = s.Serialize<uint>(SlotsCount, name: nameof(SlotsCount));
                 CurrentSlot = s.Serialize<uint>(CurrentSlot, name: nameof(CurrentSlot));
             }

@@ -16,9 +16,12 @@
         public int RevisitOriginEnvironment { get; set; }
         public string LevelName { get; set; } // The current level to load, or "endgame" if the game has been finished
         public string LevelNameAfterRevisit { get; set; }
+        public R3GameCubeBonusSave GameCubeBonus { get; set; }
 
         public override void SerializeImpl(SerializerObject s)
         {
+            OpenSpaceSettings settings = s.GetRequiredSettings<OpenSpaceSettings>();
+
             EnvironmentValues = s.SerializeObject<R3EnvironmentValues>(EnvironmentValues, name: nameof(EnvironmentValues));
             ForKeyAlgo = s.SerializeArray<uint>(ForKeyAlgo, 4, name: nameof(ForKeyAlgo));
             EndOfGameIsDone = s.SerializeBoolean<int>(EndOfGameIsDone, name: nameof(EndOfGameIsDone));
@@ -32,6 +35,9 @@
             RevisitOriginEnvironment = s.Serialize<int>(RevisitOriginEnvironment, name: nameof(RevisitOriginEnvironment));
             LevelName = s.SerializeString(LevelName, 20, name: nameof(LevelName));
             LevelNameAfterRevisit = s.SerializeString(LevelNameAfterRevisit, 20, name: nameof(LevelNameAfterRevisit));
+
+            if (settings.Platform == Platform.NintendoGameCube)
+                GameCubeBonus = s.SerializeObject<R3GameCubeBonusSave>(GameCubeBonus, name: nameof(GameCubeBonus));
         }
     }
 }
