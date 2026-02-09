@@ -22,22 +22,30 @@
         {
             OpenSpaceSettings settings = s.GetRequiredSettings<OpenSpaceSettings>();
 
-            EnvironmentValues = s.SerializeObject<R3EnvironmentValues>(EnvironmentValues, name: nameof(EnvironmentValues));
-            ForKeyAlgo = s.SerializeArray<uint>(ForKeyAlgo, 4, name: nameof(ForKeyAlgo));
-            EndOfGameIsDone = s.SerializeBoolean<int>(EndOfGameIsDone, name: nameof(EndOfGameIsDone));
-            MaxIndCurrentEnv = s.Serialize<int>(MaxIndCurrentEnv, name: nameof(MaxIndCurrentEnv));
-            MenuOptions = s.SerializeObject<R3MenuOptionHeader>(MenuOptions, name: nameof(MenuOptions));
-            WarnedUserAboutAutoSave = s.SerializeBoolean<uint>(WarnedUserAboutAutoSave, name: nameof(WarnedUserAboutAutoSave));
-            RevisitMode = s.SerializeBoolean<int>(RevisitMode, name: nameof(RevisitMode));
-            RevisitEnvScore = s.Serialize<int>(RevisitEnvScore, name: nameof(RevisitEnvScore));
-            RevisitGlobalScore = s.Serialize<int>(RevisitGlobalScore, name: nameof(RevisitGlobalScore));
-            RevisitEnvironment = s.Serialize<int>(RevisitEnvironment, name: nameof(RevisitEnvironment));
-            RevisitOriginEnvironment = s.Serialize<int>(RevisitOriginEnvironment, name: nameof(RevisitOriginEnvironment));
-            LevelName = s.SerializeString(LevelName, 20, name: nameof(LevelName));
-            LevelNameAfterRevisit = s.SerializeString(LevelNameAfterRevisit, 20, name: nameof(LevelNameAfterRevisit));
+            if (settings.EngineVersion is EngineVersion.RaymanM or EngineVersion.RaymanArena)
+            {
+                if (settings.Platform is Platform.PlayStation2 or Platform.NintendoGameCube)
+                    LevelName = s.SerializeString(LevelName, 20, name: nameof(LevelName));
+            }
+            else if (settings.EngineVersion == EngineVersion.Rayman3)
+            {
+                EnvironmentValues = s.SerializeObject<R3EnvironmentValues>(EnvironmentValues, name: nameof(EnvironmentValues));
+                ForKeyAlgo = s.SerializeArray<uint>(ForKeyAlgo, 4, name: nameof(ForKeyAlgo));
+                EndOfGameIsDone = s.SerializeBoolean<int>(EndOfGameIsDone, name: nameof(EndOfGameIsDone));
+                MaxIndCurrentEnv = s.Serialize<int>(MaxIndCurrentEnv, name: nameof(MaxIndCurrentEnv));
+                MenuOptions = s.SerializeObject<R3MenuOptionHeader>(MenuOptions, name: nameof(MenuOptions));
+                WarnedUserAboutAutoSave = s.SerializeBoolean<uint>(WarnedUserAboutAutoSave, name: nameof(WarnedUserAboutAutoSave));
+                RevisitMode = s.SerializeBoolean<int>(RevisitMode, name: nameof(RevisitMode));
+                RevisitEnvScore = s.Serialize<int>(RevisitEnvScore, name: nameof(RevisitEnvScore));
+                RevisitGlobalScore = s.Serialize<int>(RevisitGlobalScore, name: nameof(RevisitGlobalScore));
+                RevisitEnvironment = s.Serialize<int>(RevisitEnvironment, name: nameof(RevisitEnvironment));
+                RevisitOriginEnvironment = s.Serialize<int>(RevisitOriginEnvironment, name: nameof(RevisitOriginEnvironment));
+                LevelName = s.SerializeString(LevelName, 20, name: nameof(LevelName));
+                LevelNameAfterRevisit = s.SerializeString(LevelNameAfterRevisit, 20, name: nameof(LevelNameAfterRevisit));
 
-            if (settings.Platform == Platform.NintendoGameCube)
-                GameCubeBonus = s.SerializeObject<R3GameCubeBonusSave>(GameCubeBonus, name: nameof(GameCubeBonus));
+                if (settings.Platform == Platform.NintendoGameCube)
+                    GameCubeBonus = s.SerializeObject<R3GameCubeBonusSave>(GameCubeBonus, name: nameof(GameCubeBonus));
+            }
         }
     }
 }

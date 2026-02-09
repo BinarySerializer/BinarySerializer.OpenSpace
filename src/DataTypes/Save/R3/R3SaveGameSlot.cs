@@ -13,7 +13,7 @@
             
             Date = s.Serialize<uint>(Date, name: nameof(Date));
             
-            int stringLength = settings.Platform == Platform.PlayStation2 ? 2 : 10;
+            int stringLength = settings.EngineVersion == EngineVersion.Rayman3 && settings.Platform == Platform.PlayStation2 ? 2 : 10;
 
             NewSlotName = s.SerializeString(NewSlotName, length: stringLength, name: nameof(NewSlotName));
             OldSlotName = s.SerializeString(OldSlotName, length: stringLength, name: nameof(OldSlotName));
