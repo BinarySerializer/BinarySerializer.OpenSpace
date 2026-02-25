@@ -20,8 +20,10 @@ namespace BinarySerializer.OpenSpace
 
         public byte RLECode { get; set; } // Byte to use to indicate repeating bytes
 
+        public byte PaletteDataAlignment { get; set; }
         public byte PaletteBytesPerColor { get; set; }
         public ushort PaletteLength { get; set; }
+        public bool HasPalette => PaletteDataAlignment != 0 && PaletteBytesPerColor != 0 && PaletteLength != 0;
 
         public byte Red { get; set; }
         public byte Green { get; set; }
@@ -60,7 +62,7 @@ namespace BinarySerializer.OpenSpace
                 }
                 else if (BytesPerPixel == 1)
                 {
-                    if (PaletteLength != 0 && PaletteBytesPerColor != 0)
+                    if (HasPalette)
                     {
                         return PaletteBytesPerColor switch
                         {
@@ -250,8 +252,30 @@ namespace BinarySerializer.OpenSpace
             Height = s.Serialize<int>(Height, name: nameof(Height));
             BytesPerPixel = s.Serialize<byte>(BytesPerPixel, name: nameof(BytesPerPixel));
 
-            if (settings.Platform == Platform.iOS || settings.EngineVersion == EngineVersion.TonicTroubleSpecialEdition)
-                Format = BytesPerPixel == 4 ? 8888u : 888u;
+            if (settings.Platform == Platform.iOS || 
+                settings.EngineVersion == EngineVersion.TonicTroubleSpecialEdition)
+            {
+                if (BytesPerPixel == 4)
+                {
+                    Format = 8888u;
+                }
+                else if (BytesPerPixel == 3)
+                {
+                    Format = 888u;
+                }
+                else if (BytesPerPixel == 1)
+                {
+                    Format = 0;
+                    PaletteDataAlignment = 4;
+                    PaletteBytesPerColor = 3;
+                    PaletteLength = 256;
+                }
+                else
+                {
+                    // Default to 888 for now
+                    Format = 888u;
+                }
+            }
 
             // Serialize mipmaps
             if (SupportsMipmaps(settings))
@@ -267,6 +291,7 @@ namespace BinarySerializer.OpenSpace
             {
                 PaletteLength = s.Serialize<ushort>(PaletteLength, name: nameof(PaletteLength));
                 PaletteBytesPerColor = s.Serialize<byte>(PaletteBytesPerColor, name: nameof(PaletteBytesPerColor));
+                PaletteDataAlignment = PaletteBytesPerColor;
 
                 Red = s.Serialize<byte>(Red, name: nameof(Red));
                 Green = s.Serialize<byte>(Green, name: nameof(Green));
@@ -301,12 +326,6 @@ namespace BinarySerializer.OpenSpace
             else
             {
                 RecalculateImageSize();
-                PaletteLength = 0;
-                PaletteBytesPerColor = 0;
-                Red = 0;
-                Green = 0;
-                Blue = 0;
-                ChromakeyIndex = 0;
             }
         }
 
