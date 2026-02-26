@@ -10,8 +10,8 @@
         public bool InversionHor { get; set; }
         public bool InversionVert { get; set; }
 
-        public ushort[] KeyboardMapping { get; set; } // Uses DirectX key codes
-        public ushort[] ControllerMapping { get; set; }
+        public ushort[] RedefinedKey { get; set; } // Uses DirectX key codes
+        public ushort[] RedefinedPad { get; set; }
 
         public override void SerializeImpl(SerializerObject s)
         {
@@ -26,8 +26,8 @@
 
             if (settings.Platform == Platform.PC)
             {
-                KeyboardMapping = s.SerializeArray<ushort>(KeyboardMapping, 13, name: nameof(KeyboardMapping));
-                ControllerMapping = s.SerializeArray<ushort>(ControllerMapping, 13, name: nameof(ControllerMapping));
+                RedefinedKey = s.SerializeArray<ushort>(RedefinedKey, 13, name: nameof(RedefinedKey));
+                RedefinedPad = s.SerializeArray<ushort>(RedefinedPad, 13, name: nameof(RedefinedPad));
             }
         }
     }

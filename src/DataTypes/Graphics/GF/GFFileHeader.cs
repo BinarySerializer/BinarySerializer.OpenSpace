@@ -15,8 +15,8 @@ namespace BinarySerializer.OpenSpace
         public int Width { get; set; }
         public int Height { get; set; }
         public int ImageSize { get; set; }
-        public byte BytesPerPixel { get; set; }
-        public byte MipmapLevels { get; set; }
+        public byte BytesPerPixel { get; set; } // NumberOfBits
+        public byte MipmapLevels { get; set; } // NumberOfLod
 
         public byte RLECode { get; set; } // Byte to use to indicate repeating bytes
 
